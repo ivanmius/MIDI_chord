@@ -16,7 +16,17 @@ bool buttonState1;
 bool buttonState2;
 bool buttonState3;
 
-bool canBeDisabled = true;
+bool button1Disabled = false;
+bool button2Disabled = false;
+bool button3Disabled = false;
+
+unsigned long button1Timer;
+unsigned long button2Timer;
+unsigned long button3Timer;
+unsigned long timeGap;
+
+const unsigned long repressDelay = 50;
+const unsigned long maxDelay = 125;
 
 int potState1;
 int potState2; 
@@ -136,42 +146,66 @@ void loop() {
   potState1 = analogRead(POT_1);
   potState2 = analogRead(POT_2);
 
-// changing from different keySig
-
-  if (buttonState1 == LOW && keySig != 1) {
-    keySig = 1;
-    canBeDisabled = false;
-    digitalWrite(LED_GREEN, LOW);
-    digitalWrite(LED_RED, HIGH);
-  } else if (buttonState2 == LOW && keySig != 2) {
-    keySig = 2;
-    canBeDisabled = false;
-    digitalWrite(LED_GREEN, HIGH);
-    digitalWrite(LED_RED, LOW);
-  } else if (buttonState3 == LOW && keySig != 3) {
-    keySig = 3;
-    canBeDisabled = false;
-    digitalWrite(LED_GREEN, LOW);
-    digitalWrite(LED_RED, LOW);
-
-//------------------------------------- changing same keySig to 0 (pressed button again)
-    
-  } else if (buttonState1 == LOW && canBeDisabled){
-    keySig = 0;
-    digitalWrite(LED_GREEN, HIGH);
-    digitalWrite(LED_RED, HIGH);
-  } else if (buttonState2 == LOW && canBeDisabled){
-    keySig = 0;
-    digitalWrite(LED_GREEN, HIGH);
-    digitalWrite(LED_RED, HIGH);
-  } else if (buttonState3 == LOW && canBeDisabled){
-    keySig = 0;
-    digitalWrite(LED_GREEN, HIGH);
-    digitalWrite(LED_RED, HIGH);
+  if (buttonState1 == LOW && !button1Disabled){
+    if (keySig != 1){
+      keySig = 1;
+      digitalWrite(LED_GREEN, LOW);
+      digitalWrite(LED_RED, HIGH);
+    } else {
+      keySig = 0;
+      digitalWrite(LED_GREEN, HIGH);
+    }
+    button1Disabled = true;
   }
+  if (buttonState2 == LOW && !button2Disabled){
+    if (keySig != 2){
+      keySig = 2;
+      digitalWrite(LED_GREEN, HIGH);
+      digitalWrite(LED_RED, LOW);
+    } else {
+      keySig = 0;
+      digitalWrite(LED_RED, HIGH);
+    }
+    button2Disabled = true;
+  }
+  if (buttonState3 = LOW && !button3Disabled){
+    if (keySig != 3){
+      keySig = 3;
+      digitalWrite(LED_GREEN, HIGH);
+      digitalWrite(LED_RED, LOW);
+    } else {
+      keySig = 0;
+      digitalWrite(LED_GREEN, LOW);
+      digitalWrite(LED_RED, HIGH);
+    }
+    button3Disabled = true;
+  }
+
+//---------------------------------- re-enabling disabled buttons
   
-  if (!canBeDisabled && buttonState1 == HIGH && buttonState2 == HIGH && buttonState3 == HIGH){
-    canBeDisabled = true;
+  if (button1Disabled && buttonState1 == HIGH){
+    timeGap = millis() - button1Timer;
+    if (timeGap > maxDelay) { // button was just released
+      button1Timer = millis();
+    } else if (timeGap > repressDelay) { // repress delay has passed
+      button1Disabled = false;
+    }
+  }
+  if (button2Disabled && buttonState2 == HIGH){
+    timeGap = millis() - button2Timer;
+    if (timeGap > maxDelay) {
+      button2Timer = millis();
+    } else if (timeGap > repressDelay) {
+      button2Disabled = false;
+    }
+  }
+  if (button3Disabled && buttonState3 == HIGH){
+    timeGap = millis() - button3Timer;
+    if (timeGap > maxDelay) {
+      button3Timer = millis();
+    } else if (timeGap > repressDelay){
+      button3Disabled = false;
+    }
   }
 
   MIDI.read(); 
