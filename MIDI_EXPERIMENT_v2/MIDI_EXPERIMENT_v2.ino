@@ -154,6 +154,7 @@ void loop() {
     } else {
       keySig = 0;
       digitalWrite(LED_GREEN, HIGH);
+      digitalWrite(LED_RED, HIGH);
     }
     button1Disabled = true;
   }
@@ -164,18 +165,19 @@ void loop() {
       digitalWrite(LED_RED, LOW);
     } else {
       keySig = 0;
+      digitalWrite(LED_GREEN, HIGH);
       digitalWrite(LED_RED, HIGH);
     }
     button2Disabled = true;
   }
-  if (buttonState3 = LOW && !button3Disabled){
+  if (buttonState3 == LOW && !button3Disabled){
     if (keySig != 3){
       keySig = 3;
-      digitalWrite(LED_GREEN, HIGH);
+      digitalWrite(LED_GREEN, LOW);
       digitalWrite(LED_RED, LOW);
     } else {
       keySig = 0;
-      digitalWrite(LED_GREEN, LOW);
+      digitalWrite(LED_GREEN, HIGH);
       digitalWrite(LED_RED, HIGH);
     }
     button3Disabled = true;
@@ -203,7 +205,7 @@ void loop() {
     timeGap = millis() - button3Timer;
     if (timeGap > maxDelay) {
       button3Timer = millis();
-    } else if (timeGap > repressDelay){
+    } else if (timeGap > repressDelay) {
       button3Disabled = false;
     }
   }
